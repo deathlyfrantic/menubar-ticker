@@ -9,102 +9,90 @@
 #import "AppDelegate.h"
 
 #import "iTunes.h"
-#import "Spotify.h"
 
 const NSTimeInterval kPollingInterval = 10.0;
 
-
 @interface AppDelegate ()
 
-@property (nonatomic, retain) iTunesApplication *iTunes;
-@property (nonatomic, retain) SpotifyApplication *spotify;
+@property(nonatomic, retain) iTunesApplication *iTunes;
 
-@property (nonatomic, retain) NSStatusItem *statusItem;
-@property (nonatomic, retain) NSTimer *timer;
+@property(nonatomic, retain) NSStatusItem *statusItem;
+@property(nonatomic, retain) NSTimer *timer;
 
 @end
-
 
 @implementation AppDelegate
 
 @synthesize iTunes;
-@synthesize spotify;
 
 @synthesize statusItem;
 @synthesize statusMenu;
 @synthesize timer;
 
-- (void)dealloc
-{
-    [[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:nil object:nil];
+- (void)dealloc {
+  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self
+                                                             name:nil
+                                                           object:nil];
 
-    self.iTunes = nil;
-    self.spotify = nil;
+  self.iTunes = nil;
 
-    self.statusItem = nil;
-    self.statusMenu = nil;
+  self.statusItem = nil;
+  self.statusMenu = nil;
 
-    [self.timer invalidate];
-    self.timer = nil;
+  [self.timer invalidate];
+  self.timer = nil;
 
-    [super dealloc];
+  [super dealloc];
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:kPollingInterval
-                                                  target:self
-                                                selector:@selector(timerDidFire:)
-                                                userInfo:nil
-                                                 repeats:YES];
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+  self.timer = [NSTimer scheduledTimerWithTimeInterval:kPollingInterval
+                                                target:self
+                                              selector:@selector(timerDidFire:)
+                                              userInfo:nil
+                                               repeats:YES];
 
-    [[NSDistributedNotificationCenter defaultCenter] addObserver:self
-                                                        selector:@selector(didReceivePlayerNotification:)
-                                                            name:@"com.apple.iTunes.playerInfo"
-                                                          object:nil];
-
-    [[NSDistributedNotificationCenter defaultCenter] addObserver:self
-                                                        selector:@selector(didReceivePlayerNotification:)
-                                                            name:@"com.spotify.client.PlaybackStateChanged"
-                                                          object:nil];
+  [[NSDistributedNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(didReceivePlayerNotification:)
+             name:@"com.apple.iTunes.playerInfo"
+           object:nil];
 }
 
-- (void)awakeFromNib
-{
-    self.iTunes = [SBApplication applicationWithBundleIdentifier:@"com.apple.iTunes"];
-    self.spotify = [SBApplication applicationWithBundleIdentifier:@"com.spotify.client"];
+- (void)awakeFromNib {
+  self.iTunes =
+      [SBApplication applicationWithBundleIdentifier:@"com.apple.iTunes"];
 
-    self.statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    self.statusItem.menu = self.statusMenu;
-    self.statusItem.highlightMode = YES;
-    self.statusItem.toolTip = @"Menu Bar Ticker";
+  self.statusItem = [[NSStatusBar systemStatusBar]
+      statusItemWithLength:NSVariableStatusItemLength];
+  self.statusItem.menu = self.statusMenu;
+  self.statusItem.highlightMode = YES;
+  self.statusItem.toolTip = @"Menu Bar Ticker";
 
-    [self updateTrackInfo];
+  [self updateTrackInfo];
 }
 
+- (void)updateTrackInfo {
+  id currentTrack = nil;
 
-- (void)updateTrackInfo
-{
-    id currentTrack = nil;
+  if ([self.iTunes isRunning] &&
+      [self.iTunes playerState] == iTunesEPlSPlaying) {
+    currentTrack = [self.iTunes currentTrack];
+  }
 
-    if ([self.iTunes isRunning] && [self.iTunes playerState] == iTunesEPlSPlaying) {
-        currentTrack = [self.iTunes currentTrack];
-    } else if ([self.spotify isRunning] && [self.spotify playerState] == SpotifyEPlSPlaying) {
-        currentTrack = [self.spotify currentTrack];
-    }
-
-    statusItem.title = currentTrack ? [NSString stringWithFormat:@"%@ - %@", [currentTrack artist], [currentTrack name]]
-                                    : @"♫"; // 🎵 or 🎶 or ♫
+  statusItem.title =
+      currentTrack
+          ? [NSString stringWithFormat:@"%@ - %@", [currentTrack artist],
+                                       [currentTrack name]]
+          : @"♫"; // 🎵 or 🎶 or ♫
 }
 
-- (void)timerDidFire:(NSTimer *)theTimer
-{
-    [self updateTrackInfo];
+- (void)timerDidFire:(NSTimer *)theTimer {
+  [self updateTrackInfo];
 }
 
-- (void)didReceivePlayerNotification:(NSNotification *)notification
-{
-    [self updateTrackInfo];
+- (void)didReceivePlayerNotification:(NSNotification *)notification {
+  [self updateTrackInfo];
 }
 
 @end
