@@ -125,6 +125,8 @@ enum iTunesEAPD {
 	iTunesEAPDAirPortExpress = 'kAPX',
 	iTunesEAPDAppleTV = 'kAPT',
 	iTunesEAPDAirPlayDevice = 'kAPO',
+	iTunesEAPDBluetoothDevice = 'kAPB',
+	iTunesEAPDHomePod = 'kAPH',
 	iTunesEAPDUnknown = 'kAPU'
 };
 typedef enum iTunesEAPD iTunesEAPD;
